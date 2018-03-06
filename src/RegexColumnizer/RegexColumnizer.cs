@@ -213,6 +213,16 @@ namespace LogExpert
             }
         }
 
+        public IColumnizedLogLine SplitLine(ILogLineColumnizerCallback callback, ILogLine line)
+        {
+            throw new NotImplementedException();
+        }
+
+        public DateTime GetTimestamp(ILogLineColumnizerCallback callback, ILogLine line)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
     }
 }
