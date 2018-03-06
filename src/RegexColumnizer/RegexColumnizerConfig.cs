@@ -45,8 +45,8 @@ namespace RegexColumnizer
 
         public RegexColumnizerConfig()
         {
-            Regex = new Regex("(?<one>)(?<two>)(?<three>)(?<four>)", RegexOptions.IgnoreCase);
-            SelectedFields = new string[0];
+            Regex = new Regex("(?<one>).*", RegexOptions.IgnoreCase);
+            SelectedFields = new string[] {"one"};
             TimestampField = "";
             TimestampFormat = "";
 
