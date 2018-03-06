@@ -7,7 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 
-namespace LogExpert
+namespace RegexColumnizer
 {
   public partial class RegexColumnizerConfigDlg : Form
   {

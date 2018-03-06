@@ -1,5 +1,5 @@
 ﻿
-namespace LogExpert
+namespace RegexColumnizer
 {
   partial class RegexColumnizerConfigDlg
   {

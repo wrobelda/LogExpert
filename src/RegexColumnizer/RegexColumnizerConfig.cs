@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.ComponentModel;
 
-namespace LogExpert
+namespace RegexColumnizer
 {
     [Serializable]
     public class RegexColumnizerConfig

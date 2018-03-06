@@ -10,7 +10,7 @@ using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
 
-namespace LogExpert
+namespace RegexColumnizer
 {
 
     public class RegexColumnizer : IColumnizerConfigurator, ILogLineColumnizer, IInitColumnizer
