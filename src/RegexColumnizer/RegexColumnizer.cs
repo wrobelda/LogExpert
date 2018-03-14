@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
+using System.Linq;
 
 namespace RegexColumnizer
 {
@@ -82,27 +83,6 @@ namespace RegexColumnizer
             return this.timeOffset;
         }
 
-        public DateTime GetTimestamp(ILogLineColumnizerCallback callback, string line)
-        {
-      
-            Match m = config.Regex.Match(line);
-
-            DateTime timestamp;
-            if (config.TimestampField.Length == 0 || config.TimestampFormat.Length == 0 || !m.Success || !m.Groups[config.TimestampField].Success || !DateTime.TryParseExact(
-                m.Groups[config.TimestampField].Value, config.TimestampFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out timestamp))
-            {
-                timestamp = DateTime.MinValue;
-            }
-            else
-            {
-                if (config.LocalTimestamps)
-                    timestamp = timestamp.ToLocalTime();
-                timestamp = timestamp.AddMilliseconds(timeOffset);
-            }
-
-            return timestamp;
-        }
-
         public bool IsTimeshiftImplemented()
         {
             return true;
@@ -128,40 +108,6 @@ namespace RegexColumnizer
         public void SetTimeOffset(int msecOffset)
         {
             this.timeOffset = msecOffset;
-        }
-
-        public string[] SplitLine(ILogLineColumnizerCallback callback, string line)
-        {
-            
-            string[] col = new string[GetColumnCount()];
-            
-            Match m = config.Regex.Match(line);
-            if(m.Success)
-            {
-                int i = 0;
-                foreach (string column in GetColumnNames())
-                {
-                    col[i++] = m.Groups[column].Success ? m.Groups[column].Value : "";
-                }
-                DateTime timeStamp=GetTimestamp(callback, line);
-                if (timeStamp != DateTime.MinValue)
-                {
-                    for(i=0;i<config.SelectedFields.Length;i++)
-                    {
-                        if(config.TimestampField.Equals(config.SelectedFields[i]))
-                        {
-                            col[i] = timeStamp.ToString(config.TimestampFormat);
-                            break;
-                        }
-                    } 
-                }
-            }
-            else
-            {
-                for(int i=0; i<col.Length; i++)
-                    col[i]="";
-            }
-            return col;
         }
 
         #endregion
@@ -215,12 +161,62 @@ namespace RegexColumnizer
 
         public IColumnizedLogLine SplitLine(ILogLineColumnizerCallback callback, ILogLine line)
         {
-            throw new NotImplementedException();
+            ColumnizedLogLine clogLine = new ColumnizedLogLine();
+            clogLine.LogLine = line;
+
+            Column[] columns = Column.CreateColumns(GetColumnCount(), clogLine);
+
+            clogLine.ColumnValues = columns.Select(a => a as IColumn).ToArray();
+
+            Match m = config.Regex.Match(clogLine.LogLine.FullLine);
+            if (m.Success)
+            {
+                int i = 0;
+                foreach (string column in GetColumnNames())
+                {
+                    columns[i++].FullValue = m.Groups[column].Success ? m.Groups[column].Value : "";
+                }
+                DateTime timeStamp = GetTimestamp(callback, line);
+                if (timeStamp != DateTime.MinValue)
+                {
+                    for (i = 0; i < config.SelectedFields.Length; i++)
+                    {
+                        if (config.TimestampField.Equals(config.SelectedFields[i]))
+                        {
+                            columns[i].FullValue = timeStamp.ToString(config.TimestampFormat);
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < columns.Length; i++)
+                    columns[i].FullValue = "";
+            }
+
+
+            return clogLine;
         }
 
         public DateTime GetTimestamp(ILogLineColumnizerCallback callback, ILogLine line)
         {
-            throw new NotImplementedException();
+            Match m = config.Regex.Match(line.FullLine);
+
+            DateTime timestamp;
+            if (config.TimestampField.Length == 0 || config.TimestampFormat.Length == 0 || !m.Success || !m.Groups[config.TimestampField].Success || !DateTime.TryParseExact(
+                m.Groups[config.TimestampField].Value, config.TimestampFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out timestamp))
+            {
+                timestamp = DateTime.MinValue;
+            }
+            else
+            {
+                if (config.LocalTimestamps)
+                    timestamp = timestamp.ToLocalTime();
+                timestamp = timestamp.AddMilliseconds(timeOffset);
+            }
+
+            return timestamp;
         }
 
         #endregion
